@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ILP Projection Calculator</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',sans-serif;background:#e8f4fb;color:#1a3a5c;padding-bottom:60px;}
+input,select{font-family:inherit;}
+input[type=number]::-webkit-inner-spin-button{opacity:1;}
+.header{background:linear-gradient(90deg,#0d1f3c,#162d52);border-bottom:2px solid #1a3a6c;padding:22px 32px;display:flex;align-items:center;gap:14px;}
+.header-icon{width:42px;height:42px;border-radius:10px;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-size:20px;}
+.header h1{font-size:20px;font-weight:700;color:#fff;}
+.header p{font-size:12px;color:#b8d8f0;margin-top:1px;}
+.container{max-width:980px;margin:0 auto;padding:28px 20px 0;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.col{display:flex;flex-direction:column;gap:16px;}
+.card{background:#fff;border:1px solid #c5dff0;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(30,111,168,0.07);}
+.card-title{font-size:10px;letter-spacing:3px;color:#5a90b8;font-weight:700;margin-bottom:14px;text-transform:uppercase;}
+.field{margin-bottom:0;}
+.field label{display:block;font-size:11px;color:#5a80a0;margin-bottom:4px;letter-spacing:0.4px;}
+.input-wrap{display:flex;}
+.affix{background:#daeef8;border:1px solid #c5dff0;padding:7px 8px;font-size:12px;color:#3a7090;display:flex;align-items:center;}
+.affix-l{border-right:none;border-radius:6px 0 0 6px;}
+.affix-r{border-left:none;border-radius:0 6px 6px 0;}
+input[type=number],input[type=text],select{background:#f4f9fd;border:1px solid #c5dff0;border-radius:6px;color:#1a3a5c;padding:7px 9px;font-size:13px;outline:none;width:100%;}
+.rate-input{display:flex;align-items:center;}
+.rate-input input{border-radius:6px 0 0 6px;border-right:none;font-weight:700;font-size:15px;}
+.rate-pct{background:#daeef8;border:1px solid #c5dff0;border-left:none;border-radius:0 6px 6px 0;padding:7px 10px;font-size:14px;font-weight:700;}
+.grid2-inner{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;}
+.hint{font-size:10px;color:#7aaac8;margin-top:4px;}
+.summary-box{margin-top:12px;background:linear-gradient(135deg,#0d1f3c,#162d52);border-radius:8px;padding:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;}
+.summary-box .s-label{font-size:10px;color:#b8d8f0;letter-spacing:1px;margin-bottom:4px;}
+.summary-box .s-val{font-size:20px;font-weight:800;color:#fff;line-height:1;}
+.summary-box .s-sub{font-size:11px;font-weight:600;color:#b8d8f0;}
+.info-note{margin-top:8px;font-size:11px;color:#e8a020;background:rgba(232,160,32,0.08);border:1px solid rgba(232,160,32,0.25);border-radius:6px;padding:6px 10px;}
+.pill{margin-top:10px;font-size:12px;color:#4a7090;background:#eaf4fb;border-radius:6px;padding:6px 10px;border:1px solid #c5dff0;}
+.pill strong{color:#1a8a50;}
+.net-rate{margin-top:10px;font-size:12px;color:#4a7090;background:#eaf4fb;border-radius:6px;padding:6px 10px;border:1px solid #c5dff0;display:flex;justify-content:space-between;}
+/* Bonuses */
+.bonus-form{display:grid;grid-template-columns:2fr 60px 1fr 36px;gap:7px;align-items:end;margin-bottom:10px;}
+.add-btn{background:linear-gradient(135deg,#1e6fa8,#1455b3);border:none;border-radius:8px;color:#fff;font-weight:800;font-size:20px;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.bonus-list{display:flex;flex-direction:column;gap:6px;max-height:190px;overflow-y:auto;}
+.bonus-item{display:flex;justify-content:space-between;align-items:center;background:rgba(30,111,168,0.06);border:1px solid rgba(30,111,168,0.18);border-radius:7px;padding:7px 12px;}
+.bonus-name{font-size:13px;font-weight:600;color:#1a5c92;}
+.bonus-yr{font-size:11px;color:#6a9ab0;margin-left:8px;}
+.bonus-amt{font-size:13px;font-weight:700;color:#1a8a50;}
+.remove-btn{background:rgba(208,64,64,0.1);border:none;color:#d04040;border-radius:5px;width:22px;height:22px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;}
+.bonus-total{margin-top:8px;font-size:12px;color:#4a7090;text-align:right;}
+/* Results */
+.result-box{background:linear-gradient(135deg,#0d1f3c,#162d52);border-radius:12px;padding:22px;text-align:center;margin-bottom:14px;}
+.result-label{font-size:11px;letter-spacing:3px;color:#b8d8f0;margin-bottom:8px;}
+.result-val{font-size:38px;font-weight:800;color:#fff;letter-spacing:-1px;}
+.result-gain{margin-top:6px;font-size:13px;}
+.mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.mini-stat{background:#f4f9fd;border:1px solid #c5dff0;border-radius:8px;padding:10px 12px;}
+.mini-stat .ms-label{font-size:10px;color:#7aaac8;letter-spacing:1px;margin-bottom:4px;text-transform:uppercase;}
+.mini-stat .ms-val{font-size:14px;font-weight:700;}
+/* Chart */
+.chart-card{background:#fff;border:1px solid #c5dff0;border-radius:12px;padding:20px;margin-top:24px;box-shadow:0 2px 8px rgba(30,111,168,0.07);}
+.chart-title{font-size:10px;letter-spacing:3px;color:#5a90b8;font-weight:700;margin-bottom:16px;text-transform:uppercase;}
+canvas{width:100%!important;}
+/* Toggle */
+.toggle-btn{display:block;margin:24px auto 0;background:#fff;border:1.5px solid #1e6fa8;color:#1e6fa8;border-radius:8px;padding:9px 28px;font-size:12px;letter-spacing:2px;cursor:pointer;font-family:inherit;font-weight:600;}
+/* Table */
+.table-wrap{margin-top:16px;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;background:#fff;border-radius:10px;overflow:hidden;}
+thead tr{background:#1e6fa8;}
+th{padding:10px;text-align:right;color:#fff;white-space:nowrap;font-weight:600;font-size:11px;letter-spacing:1px;}
+tbody tr:nth-child(even){background:#f0f7fc;}
+tbody tr:nth-child(odd){background:#fff;}
+td{padding:7px 10px;text-align:right;color:#2a5070;border-bottom:1px solid #e0eef8;font-size:12px;}
+td.yr-col{color:#4a7090;}
+.badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;}
+.badge.paying{background:rgba(26,110,181,0.12);color:#1a6eb5;}
+.badge.paidup{background:rgba(160,180,200,0.15);color:#8aaabb;}
+.disclaimer{margin-top:36px;padding:12px 16px;background:rgba(30,111,168,0.08);border-radius:8px;border:1px solid rgba(30,111,168,0.15);font-size:11px;color:#5a8aaa;text-align:center;line-height:1.8;}
+@media(max-width:700px){.grid2{grid-template-columns:1fr;}.bonus-form{grid-template-columns:1fr 50px 1fr 36px;}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">📈</div>
+  <div>
+    <h1>ILP Projection Calculator</h1>
+    <p>Investment-Linked Policy · Illustrative purposes only</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="grid2">
+    <!-- LEFT -->
+    <div class="col">
+      <!-- Policy Period -->
+      <div class="card">
+        <div class="card-title">Policy Period</div>
+        <div class="field">
+          <label>Current Age</label>
+          <div class="input-wrap">
+            <input type="number" id="currentAge" value="30" min="1" max="80" oninput="calculate()">
+            <span class="affix affix-r">yrs</span>
+          </div>
+        </div>
+        <div class="grid2-inner">
+          <div class="field">
+            <label>Premium Term</label>
+            <select id="premiumTerm" onchange="onPremiumTermChange()">
+              <option value="5">5 years</option>
+              <option value="10" selected>10 years</option>
+              <option value="15">15 years</option>
+              <option value="20">20 years</option>
+              <option value="25">25 years</option>
+            </select>
+            <div class="hint">How long you pay premiums</div>
+          </div>
+          <div class="field">
+            <label>Policy Term</label>
+            <select id="policyTerm" onchange="calculate()"></select>
+            <div class="hint">How long policy runs</div>
+          </div>
+        </div>
+        <div class="summary-box">
+          <div>
+            <div class="s-label">PAY FOR</div>
+            <div class="s-val" id="s-pay">10</div>
+            <div class="s-sub">yrs</div>
+          </div>
+          <div>
+            <div class="s-label">HOLD TILL</div>
+            <div class="s-val" id="s-age">50</div>
+            <div class="s-sub">y.o</div>
+          </div>
+          <div>
+            <div class="s-label">PAYOUT AFTER</div>
+            <div class="s-val" id="s-payout">20</div>
+            <div class="s-sub">yrs</div>
+          </div>
+        </div>
+        <div class="info-note" id="holdNote" style="display:none"></div>
+      </div>
+
+      <!-- Premium & Investment -->
+      <div class="card">
+        <div class="card-title">Premium & Investment</div>
+        <div class="field">
+          <label>Initial Investment (Lump Sum)</label>
+          <div class="input-wrap">
+            <span class="affix affix-l">S$</span>
+            <input type="number" id="initialInvestment" value="10000" min="0" oninput="calculate()">
+          </div>
+        </div>
+        <div class="field" style="margin-top:12px">
+          <label>Annual Premium</label>
+          <div class="input-wrap">
+            <span class="affix affix-l">S$</span>
+            <input type="number" id="annualPremium" value="6000" min="0" oninput="calculate()">
+          </div>
+        </div>
+        <div class="pill" id="premiumPill"></div>
+      </div>
+
+      <!-- Rates -->
+      <div class="card">
+        <div class="card-title">Rates & Charges</div>
+        <div class="field">
+          <label>Annual Return %</label>
+          <div class="rate-input">
+            <input type="number" id="annualReturn" value="6" min="0" max="100" step="0.1" style="color:#1a6eb5" oninput="calculate()">
+            <span class="rate-pct" style="color:#1a6eb5">%</span>
+          </div>
+        </div>
+        <div class="field" style="margin-top:12px">
+          <label>Dividend Payout %</label>
+          <div class="rate-input">
+            <input type="number" id="dividendPct" value="3" min="0" max="100" step="0.1" style="color:#e8a020" oninput="calculate()">
+            <span class="rate-pct" style="color:#e8a020">%</span>
+          </div>
+        </div>
+        <div class="field" style="margin-top:12px">
+          <label>Policy Charges %</label>
+          <div class="rate-input">
+            <input type="number" id="policyCharge" value="1.5" min="0" max="100" step="0.1" style="color:#d04040" oninput="calculate()">
+            <span class="rate-pct" style="color:#d04040">%</span>
+          </div>
+        </div>
+        <div class="net-rate">
+          <span>Net growth rate:</span>
+          <strong id="netRate">4.5% p.a.</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="col">
+      <!-- Bonuses -->
+      <div class="card">
+        <div class="card-title">Bonuses</div>
+        <div class="bonus-form">
+          <div class="field">
+            <label>Bonus Label</label>
+            <input type="text" id="bonusLabel" placeholder="e.g. Welcome Bonus">
+          </div>
+          <div class="field">
+            <label>Year</label>
+            <input type="number" id="bonusYear" value="1" min="1">
+          </div>
+          <div class="field">
+            <label>Amount (S$)</label>
+            <input type="number" id="bonusAmount" placeholder="0" min="0">
+          </div>
+          <button class="add-btn" onclick="addBonus()">+</button>
+        </div>
+        <div class="bonus-list" id="bonusList"></div>
+        <div class="bonus-total" id="bonusTotal" style="display:none"></div>
+      </div>
+
+      <!-- Results -->
+      <div class="card">
+        <div class="card-title">Projected Results</div>
+        <div class="result-box">
+          <div class="result-label" id="resultLabel">PROJECTED FUND VALUE AT AGE 50 (YR 20)</div>
+          <div class="result-val" id="resultVal">S$0.00</div>
+          <div class="result-gain" id="resultGain"></div>
+        </div>
+        <div class="mini-grid">
+          <div class="mini-stat"><div class="ms-label">Total Paid In</div><div class="ms-val" id="totalPaid" style="color:#1a3a5c">-</div></div>
+          <div class="mini-stat"><div class="ms-label">Total Bonuses</div><div class="ms-val" id="totalBonuses" style="color:#1a8a50">-</div></div>
+          <div class="mini-stat"><div class="ms-label">Est. Dividends (cumul.)</div><div class="ms-val" id="totalDividends" style="color:#b07010">-</div></div>
+          <div class="mini-stat"><div class="ms-label">Total Charges Deducted</div><div class="ms-val" id="totalCharges" style="color:#d04040">-</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="chart-card">
+    <div class="chart-title">Fund Growth Over Time</div>
+    <canvas id="growthChart" height="260"></canvas>
+  </div>
+
+  <!-- Table toggle -->
+  <button class="toggle-btn" onclick="toggleTable()">▼ VIEW YEAR-BY-YEAR BREAKDOWN</button>
+  <div class="table-wrap" id="tableWrap" style="display:none">
+    <table>
+      <thead>
+        <tr>
+          <th>Yr</th><th>Age</th><th>Status</th><th>Opening</th><th>Premium</th>
+          <th>Bonus</th><th>Growth</th><th>Charges</th><th>Dividend</th><th>Closing Value</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <div class="disclaimer">⚠️ For illustrative purposes only · Not financial advice · Actual results vary based on fund performance, insurer terms, and market conditions</div>
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────
+let bonuses = [
+  { id: 1, label: "Welcome Bonus", year: 1, amount: 500 },
+  { id: 2, label: "Loyalty Bonus Yr 5", year: 5, amount: 1000 }
+];
+let nextId = 3;
+let chartInstance = null;
+let tableVisible = false;
+let lastRows = [];
+
+// ── Helpers ───────────────────────────────────────────
+function fmt(val) {
+  return 'S$' + Number(val).toLocaleString('en-SG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// ── Policy Term dropdown ───────────────────────────────
+function onPremiumTermChange() {
+  const pt = Number(document.getElementById('premiumTerm').value);
+  const sel = document.getElementById('policyTerm');
+  const cur = Number(sel.value);
+  sel.innerHTML = '';
+  [5,10,15,20,25,30,35,40].filter(v => v >= pt).forEach(v => {
+    const o = document.createElement('option');
+    o.value = v; o.textContent = v + ' years';
+    if (v === Math.max(cur, pt)) o.selected = true;
+    sel.appendChild(o);
+  });
+  calculate();
+}
+
+// ── Bonuses ───────────────────────────────────────────
+function addBonus() {
+  const amt = Number(document.getElementById('bonusAmount').value);
+  if (!amt || amt <= 0) return;
+  const label = document.getElementById('bonusLabel').value || `Bonus Yr ${document.getElementById('bonusYear').value}`;
+  const year = Number(document.getElementById('bonusYear').value);
+  bonuses.push({ id: nextId++, label, year, amount: amt });
+  document.getElementById('bonusLabel').value = '';
+  document.getElementById('bonusYear').value = 1;
+  document.getElementById('bonusAmount').value = '';
+  renderBonuses();
+  calculate();
+}
+
+function removeBonus(id) {
+  bonuses = bonuses.filter(b => b.id !== id);
+  renderBonuses();
+  calculate();
+}
+
+function renderBonuses() {
+  const list = document.getElementById('bonusList');
+  const total = document.getElementById('bonusTotal');
+  if (bonuses.length === 0) {
+    list.innerHTML = '<div style="color:#7aa0c0;font-size:12px;text-align:center;padding:14px 0">No bonuses added yet</div>';
+    total.style.display = 'none';
+    return;
+  }
+  list.innerHTML = bonuses.map(b => `
+    <div class="bonus-item">
+      <div><span class="bonus-name">${b.label}</span><span class="bonus-yr">Year ${b.year}</span></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="bonus-amt">${fmt(b.amount)}</span>
+        <button class="remove-btn" onclick="removeBonus(${b.id})">×</button>
+      </div>
+    </div>`).join('');
+  const sum = bonuses.reduce((s, b) => s + Number(b.amount), 0);
+  total.style.display = 'block';
+  total.innerHTML = `Total: <strong style="color:#1a8a50">${fmt(sum)}</strong>`;
+}
+
+// ── Main Calculate ────────────────────────────────────
+function calculate() {
+  const currentAge = Number(document.getElementById('currentAge').value) || 30;
+  const premiumTerm = Number(document.getElementById('premiumTerm').value);
+  const policyTerm = Number(document.getElementById('policyTerm').value) || 20;
+  const initialInvestment = Number(document.getElementById('initialInvestment').value) || 0;
+  const annualPremium = Number(document.getElementById('annualPremium').value) || 0;
+  const annualReturn = Number(document.getElementById('annualReturn').value) || 0;
+  const dividendPct = Number(document.getElementById('dividendPct').value) || 0;
+  const policyCharge = Number(document.getElementById('policyCharge').value) || 0;
+  const payoutAge = currentAge + policyTerm;
+
+  // Summary box
+  document.getElementById('s-pay').textContent = premiumTerm;
+  document.getElementById('s-age').textContent = payoutAge;
+  document.getElementById('s-payout').textContent = policyTerm;
+
+  // Hold note
+  const note = document.getElementById('holdNote');
+  if (premiumTerm < policyTerm) {
+    note.style.display = 'block';
+    note.textContent = `ℹ️ Premiums stop after year ${premiumTerm} — fund continues to grow for ${policyTerm - premiumTerm} more years`;
+  } else { note.style.display = 'none'; }
+
+  // Premium pill
+  document.getElementById('premiumPill').innerHTML =
+    `Total premiums paid: <strong>${fmt(initialInvestment + annualPremium * premiumTerm)}</strong> <span style="color:#9ab8c8;font-size:11px">(lump sum + ${premiumTerm} yrs × ${fmt(annualPremium)})</span>`;
+
+  // Net rate
+  const net = annualReturn - policyCharge;
+  const netEl = document.getElementById('netRate');
+  netEl.textContent = net.toFixed(1) + '% p.a.';
+  netEl.style.color = net >= 0 ? '#1a8a50' : '#d04040';
+
+  // Calculation
+  const growthRate = annualReturn / 100;
+  const chargeRate = policyCharge / 100;
+  const divRate = dividendPct / 100;
+  let fundValue = initialInvestment;
+  let totalPremiumPaid = initialInvestment;
+  let totalCharges = 0, totalBonusesAmt = 0, totalDividends = 0;
+  const rows = [];
+
+  for (let yr = 1; yr <= policyTerm; yr++) {
+    const openingValue = fundValue;
+    const isPaying = yr <= premiumTerm;
+    if (isPaying) { fundValue += annualPremium; totalPremiumPaid += annualPremium; }
+    const bonusThisYear = bonuses.filter(b => b.year === yr).reduce((s, b) => s + Number(b.amount), 0);
+    fundValue += bonusThisYear; totalBonusesAmt += bonusThisYear;
+    const growthThisYear = fundValue * growthRate; fundValue += growthThisYear;
+    const chargesThisYear = fundValue * chargeRate; fundValue -= chargesThisYear; totalCharges += chargesThisYear;
+    const dividendThisYear = fundValue * divRate; totalDividends += dividendThisYear;
+    rows.push({ yr, age: currentAge + yr, openingValue, premium: isPaying ? annualPremium : 0, paying: isPaying, bonus: bonusThisYear, growth: growthThisYear, charges: chargesThisYear, dividend: dividendThisYear, closingValue: fundValue, totalPaid: totalPremiumPaid });
+  }
+  lastRows = rows;
+
+  // Results
+  const netGain = fundValue - totalPremiumPaid;
+  const netGainPct = totalPremiumPaid > 0 ? (netGain / totalPremiumPaid) * 100 : 0;
+  document.getElementById('resultLabel').textContent = `PROJECTED FUND VALUE AT AGE ${payoutAge} (YR ${policyTerm})`;
+  document.getElementById('resultVal').textContent = fmt(fundValue);
+  const gainEl = document.getElementById('resultGain');
+  gainEl.textContent = `${netGain >= 0 ? '▲' : '▼'} ${fmt(Math.abs(netGain))} (${netGainPct >= 0 ? '+' : ''}${netGainPct.toFixed(1)}%) vs total paid in`;
+  gainEl.style.color = netGain >= 0 ? '#7fffb0' : '#ffaaaa';
+  document.getElementById('totalPaid').textContent = fmt(totalPremiumPaid);
+  document.getElementById('totalBonuses').textContent = fmt(totalBonusesAmt);
+  document.getElementById('totalDividends').textContent = fmt(totalDividends);
+  document.getElementById('totalCharges').textContent = fmt(totalCharges);
+
+  // Chart
+  drawChart(rows);
+
+  // Table (if visible)
+  if (tableVisible) renderTable(rows);
+}
+
+// ── Chart (pure canvas) ───────────────────────────────
+function drawChart(rows) {
+  const canvas = document.getElementById('growthChart');
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth - 40;
+  const H = 260;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const PAD = { top: 20, right: 20, bottom: 40, left: 70 };
+  const cW = W - PAD.left - PAD.right;
+  const cH = H - PAD.top - PAD.bottom;
+
+  const maxVal = Math.max(...rows.map(r => r.closingValue)) * 1.05;
+  const xStep = cW / (rows.length - 1 || 1);
+
+  const toX = (i) => PAD.left + i * xStep;
+  const toY = (v) => PAD.top + cH - (v / maxVal) * cH;
+
+  // Grid
+  ctx.strokeStyle = '#ddeef8'; ctx.lineWidth = 1;
+  for (let i = 0; i <= 5; i++) {
+    const y = PAD.top + (cH / 5) * i;
+    ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + cW, y); ctx.stroke();
+    const val = maxVal * (1 - i / 5);
+    ctx.fillStyle = '#7aaac8'; ctx.font = '10px Segoe UI'; ctx.textAlign = 'right';
+    ctx.fillText('S$' + (val / 1000).toFixed(0) + 'k', PAD.left - 6, y + 4);
+  }
+
+  // X axis labels
+  ctx.fillStyle = '#7aaac8'; ctx.font = '10px Segoe UI'; ctx.textAlign = 'center';
+  const step = Math.ceil(rows.length / 8);
+  rows.forEach((r, i) => {
+    if (i % step === 0 || i === rows.length - 1) {
+      ctx.fillText(r.age, toX(i), H - PAD.bottom + 16);
+    }
+  });
+  ctx.fillText('Age', PAD.left + cW, H - 4);
+
+  // Fund value area
+  ctx.beginPath();
+  rows.forEach((r, i) => i === 0 ? ctx.moveTo(toX(i), toY(r.closingValue)) : ctx.lineTo(toX(i), toY(r.closingValue)));
+  ctx.lineTo(toX(rows.length - 1), PAD.top + cH);
+  ctx.lineTo(PAD.left, PAD.top + cH);
+  ctx.closePath();
+  const grad1 = ctx.createLinearGradient(0, PAD.top, 0, PAD.top + cH);
+  grad1.addColorStop(0, 'rgba(30,111,168,0.3)'); grad1.addColorStop(1, 'rgba(30,111,168,0.02)');
+  ctx.fillStyle = grad1; ctx.fill();
+
+  ctx.beginPath();
+  rows.forEach((r, i) => i === 0 ? ctx.moveTo(toX(i), toY(r.closingValue)) : ctx.lineTo(toX(i), toY(r.closingValue)));
+  ctx.strokeStyle = '#1e6fa8'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.stroke();
+
+  // Total paid area
+  ctx.beginPath();
+  rows.forEach((r, i) => i === 0 ? ctx.moveTo(toX(i), toY(r.totalPaid)) : ctx.lineTo(toX(i), toY(r.totalPaid)));
+  ctx.lineTo(toX(rows.length - 1), PAD.top + cH);
+  ctx.lineTo(PAD.left, PAD.top + cH);
+  ctx.closePath();
+  const grad2 = ctx.createLinearGradient(0, PAD.top, 0, PAD.top + cH);
+  grad2.addColorStop(0, 'rgba(26,138,80,0.2)'); grad2.addColorStop(1, 'rgba(26,138,80,0.02)');
+  ctx.fillStyle = grad2; ctx.fill();
+
+  ctx.beginPath();
+  rows.forEach((r, i) => i === 0 ? ctx.moveTo(toX(i), toY(r.totalPaid)) : ctx.lineTo(toX(i), toY(r.totalPaid)));
+  ctx.strokeStyle = '#1a8a50'; ctx.lineWidth = 2; ctx.stroke();
+
+  // Legend
+  ctx.fillStyle = '#1e6fa8'; ctx.fillRect(PAD.left, 6, 16, 3);
+  ctx.fillStyle = '#4a7090'; ctx.font = '11px Segoe UI'; ctx.textAlign = 'left';
+  ctx.fillText('Fund Value', PAD.left + 22, 11);
+  ctx.fillStyle = '#1a8a50'; ctx.fillRect(PAD.left + 110, 6, 16, 3);
+  ctx.fillStyle = '#4a7090';
+  ctx.fillText('Total Paid In', PAD.left + 132, 11);
+}
+
+// ── Table ─────────────────────────────────────────────
+function toggleTable() {
+  tableVisible = !tableVisible;
+  const wrap = document.getElementById('tableWrap');
+  const btn = document.querySelector('.toggle-btn');
+  wrap.style.display = tableVisible ? 'block' : 'none';
+  btn.textContent = tableVisible ? '▲ HIDE YEAR-BY-YEAR BREAKDOWN' : '▼ VIEW YEAR-BY-YEAR BREAKDOWN';
+  if (tableVisible) renderTable(lastRows);
+}
+
+function renderTable(rows) {
+  document.getElementById('tableBody').innerHTML = rows.map((r, i) => `
+    <tr>
+      <td class="yr-col">${r.yr}</td>
+      <td class="yr-col">${r.age}</td>
+      <td style="text-align:center"><span class="badge ${r.paying ? 'paying' : 'paidup'}">${r.paying ? 'Paying' : 'Paid-up'}</span></td>
+      <td>${fmt(r.openingValue)}</td>
+      <td style="color:${r.paying ? '#1a3a5c' : '#b0c8d8'}">${fmt(r.premium)}</td>
+      <td style="color:${r.bonus > 0 ? '#1a8a50' : '#b0c8d8'}">${fmt(r.bonus)}</td>
+      <td>${fmt(r.growth)}</td>
+      <td style="color:#d04040">${fmt(r.charges)}</td>
+      <td style="color:#b07010">${fmt(r.dividend)}</td>
+      <td style="color:#1a5c92;font-weight:700">${fmt(r.closingValue)}</td>
+    </tr>`).join('');
+}
+
+// ── Init ──────────────────────────────────────────────
+onPremiumTermChange();
+renderBonuses();
+window.addEventListener('resize', () => { if (lastRows.length) drawChart(lastRows); });
+</script>
+</body>
+</html>
